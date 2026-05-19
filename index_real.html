@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>HRPT — Sistema de Enfermaria</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1a237e;--navy2:#283593;--navy3:#3949ab;
+  --cyan:#0288d1;--cyan2:#29b6f6;--cyan3:#e3f2fd;
+  --bg:#f0f4ff;--card:#fff;--border:#e8eaf6;
+  --text:#1a237e;--muted:#7986cb;--muted2:#9fa8da;
+  --red:#e53935;--red-bg:#ffebee;--red-t:#b71c1c;
+  --amber:#f57c00;--amber-bg:#fff3e0;--amber-t:#e65100;
+  --green:#2e7d32;--green-bg:#e8f5e9;--green-t:#1b5e20;
+  --gray:#607d8b;--gray-bg:#f5f5f5;
+  --shadow:0 2px 12px rgba(26,35,126,.08);
+  --shadow2:0 4px 24px rgba(26,35,126,.13);
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --radius:12px;--radius2:18px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy) 0%,var(--cyan) 100%);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.login-card{background:#fff;border-radius:24px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--cyan) 0%,var(--navy) 100%);border-radius:20px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 8px 24px rgba(2,136,209,.35)}
+.login-logo-icon svg{width:40px;height:40px;fill:none;stroke:#fff;stroke-width:2}
+.login-hosp{font-size:11px;font-weight:700;color:var(--navy);letter-spacing:1px;text-transform:uppercase;line-height:1.4}
+.login-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.login-title{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px;text-align:center}
+.login-desc{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px}
+.login-fg{display:flex;flex-direction:column;margin-bottom:14px}
+.login-lbl{font-size:11px;font-weight:600;color:var(--navy);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.login-inp{padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font);outline:none;color:var(--navy);background:#f7f9ff;transition:border-color .15s}
+.login-inp:focus{border-color:var(--cyan);background:#fff}
+.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--navy3) 0%,var(--cyan) 100%);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-top:6px;letter-spacing:.5px;transition:opacity .15s;box-shadow:0 4px 16px rgba(2,136,209,.3)}
+.login-btn:hover{opacity:.92}
+.login-err{font-size:12px;color:var(--red);text-align:center;margin-top:8px;min-height:18px}
+.login-profiles{display:flex;gap:10px;margin-bottom:20px}
+.login-profile-btn{flex:1;padding:10px 8px;border:1.5px solid var(--border);border-radius:10px;background:#f7f9ff;cursor:pointer;text-align:center;transition:all .15s;font-family:var(--font)}
+.login-profile-btn.sel{border-color:var(--cyan);background:var(--cyan3)}
+.login-profile-btn:hover{border-color:var(--muted2)}
+.lp-icon{font-size:22px;margin-bottom:4px}
+.lp-name{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px}
+.lp-user{font-size:10px;color:var(--muted)}
+
+/* ── APP SHELL ── */
+#app{display:none;min-height:100vh;flex-direction:column}
+#app.visible{display:flex}
+
+/* SIDEBAR */
+.layout{display:flex;flex:1;min-height:0}
+.sidebar{width:240px;background:linear-gradient(180deg,var(--navy) 0%,var(--navy2) 100%);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform .25s}
+.sidebar-logo{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo-row{display:flex;align-items:center;gap:10px}
+.sidebar-logo-box{width:40px;height:40px;background:linear-gradient(135deg,var(--cyan2) 0%,var(--cyan) 100%);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-logo-txt{font-size:16px;font-weight:800;color:#fff;letter-spacing:1px}
+.sidebar-hosp{font-size:9px;color:rgba(255,255,255,.55);line-height:1.3;margin-top:1px}
+.sidebar-user{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--cyan2),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:13px;font-weight:600;color:#fff}
+.user-role{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px}
+.sidebar-nav{padding:12px 0;flex:1;overflow-y:auto}
+.nav-section{font-size:9px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.2px;padding:12px 20px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:all .15s;border-left:3px solid transparent;margin:1px 0}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:rgba(41,182,246,.15);color:var(--cyan2);border-left-color:var(--cyan2);font-weight:600}
+.nav-item i{font-size:18px;flex-shrink:0}
+.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.1)}
+.logout-btn{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;padding:8px 10px;border-radius:8px;transition:all .15s;background:none;border:none;width:100%;font-family:var(--font)}
+.logout-btn:hover{background:rgba(229,57,53,.2);color:#ff8a80}
+
+/* TOPBAR */
+.topbar{height:60px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;margin-left:240px;box-shadow:var(--shadow);position:sticky;top:0;z-index:40}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:16px;font-weight:700;color:var(--navy)}
+.topbar-sub{font-size:11px;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.sync-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:var(--green-bg);font-size:11px;color:var(--green-t);font-weight:500}
+.sync-pill.err{background:var(--red-bg);color:var(--red-t)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.sync-dot.pulse{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MAIN CONTENT */
+.content{margin-left:240px;padding:20px 24px;flex:1;min-width:0}
+
+/* STATS CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);border:1px solid var(--border);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:0 0 0 60px;opacity:.08}
+.stat-card.occ::before{background:var(--red)}
+.stat-card.alt::before{background:var(--amber)}
+.stat-card.free::before{background:var(--green)}
+.stat-card.clean::before{background:var(--gray)}
+.stat-card.total::before{background:var(--navy)}
+.stat-num{font-size:28px;font-weight:800;line-height:1}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:4px;font-weight:500}
+.stat-icon{position:absolute;top:14px;right:14px;font-size:20px;opacity:.25}
+
+/* WARD */
+.ward-grid{display:flex;flex-direction:column;gap:10px}
+.room-card{background:var(--card);border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.room-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.room-badge{background:var(--navy);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.5px}
+.room-lbl{font-size:11px;color:var(--muted);font-weight:500}
+.beds{display:flex;gap:8px;flex-wrap:wrap}
+.bed{width:84px;height:68px;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .15s;position:relative;background:var(--card)}
+.bed:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
+.bed.sel{outline:2.5px solid var(--cyan);box-shadow:0 0 0 4px rgba(2,136,209,.12)}
+.bsdot{width:7px;height:7px;border-radius:50%;position:absolute;top:7px;right:7px}
+.bed-id{font-size:11px;font-weight:700;color:var(--navy)}
+.bed-nm{font-size:9px;color:var(--muted);max-width:76px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.bed.occ{background:linear-gradient(135deg,#fff5f5,#fee2e2);border-color:#fecaca}
+.bed.alert{background:linear-gradient(135deg,#fffbf0,#fef3c7);border-color:#fde68a}
+.bed.free{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#bbf7d0}
+.bed.clean{background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-color:#e2e8f0}
+
+/* RIGHT PANEL */
+.main-layout{display:flex;gap:16px}
+.ward-wrap{flex:1;min-width:0}
+.panel{width:320px;flex-shrink:0;background:var(--card);border-radius:var(--radius2);box-shadow:var(--shadow2);overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 100px);position:sticky;top:80px;border:1px solid var(--border)}
+.panel-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:10px;color:var(--muted2);font-size:13px;padding:2rem;text-align:center}
+.phdr{padding:14px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);flex-shrink:0}
+.phdr-bed{font-size:16px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px}
+.phdr-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 9px;border-radius:20px;margin-top:5px;font-weight:600}
+.badge-occ{background:rgba(229,57,53,.2);color:#ff8a80}
+.badge-alert{background:rgba(245,124,0,.2);color:#ffcc02}
+.badge-free{background:rgba(46,125,50,.2);color:#69f0ae}
+.iso-badge{background:rgba(229,57,53,.25);color:#ff8a80;display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;margin-left:6px;font-weight:600}
+.pbody{padding:14px 16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px}
+.sec-title{font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:flex;align-items:center;gap:5px;padding-bottom:4px;border-bottom:1.5px solid var(--cyan3)}
+.irow{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:.5px solid var(--border);gap:8px}
+.irow:last-child{border:none}.ilbl{color:var(--muted);flex-shrink:0}.ival{font-weight:600;text-align:right;font-size:12px;color:var(--navy)}
+.med-item{background:var(--cyan3);border-radius:8px;padding:6px 10px;margin-bottom:5px;border-left:3px solid var(--cyan)}
+.med-nm{font-size:12px;font-weight:600;color:var(--navy)}.med-dt{font-size:11px;color:var(--muted);margin-top:1px}
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.vcard{background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);border-radius:10px;padding:8px 10px;text-align:center}
+.vlbl{font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px}
+.vval{font-size:15px;font-weight:700;color:#fff;margin-top:2px}.vunit{font-size:9px;color:rgba(255,255,255,.5)}
+.obs{background:var(--bg);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--muted);line-height:1.6;white-space:pre-wrap;border:1px solid var(--border)}
+.pfoot{display:flex;gap:7px;padding:10px 16px;border-top:1px solid var(--border);flex-shrink:0;justify-content:flex-end;flex-wrap:wrap;background:var(--bg)}
+.img-thumb-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.img-thumb{width:60px;height:60px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;transition:transform .15s}
+.img-thumb:hover{transform:scale(1.08)}
+.img-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;align-items:center;justify-content:center}
+.img-lightbox img{max-width:90vw;max-height:90vh;border-radius:10px}
+.img-lightbox-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;cursor:pointer;padding:7px 12px;border-radius:8px}
+
+/* BOTÕES */
+.btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:7px 13px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);color:var(--navy);cursor:pointer;transition:all .15s;font-weight:600;font-family:var(--font)}
+.btn:hover{background:var(--bg)}
+.btn-primary{background:linear-gradient(135deg,var(--navy3),var(--cyan));color:#fff;border:none;box-shadow:0 3px 10px rgba(2,136,209,.25)}
+.btn-primary:hover{opacity:.92;box-shadow:0 4px 16px rgba(2,136,209,.35)}
+.btn-danger{background:var(--red-bg);color:var(--red-t);border-color:#fecaca}
+.btn-green{background:var(--green-bg);color:var(--green-t);border-color:#bbf7d0}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(26,35,126,.45);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;backdrop-filter:blur(4px)}
+.modal{background:var(--card);border-radius:var(--radius2);width:100%;max-width:700px;margin:auto;display:flex;flex-direction:column;box-shadow:var(--shadow2)}
+.mhdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);border-radius:var(--radius2) var(--radius2) 0 0;position:sticky;top:0;z-index:2}
+.mhdr-title{font-size:16px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.mbody{padding:18px 20px;display:flex;flex-direction:column;gap:11px}
+.mfooter{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:9px;background:var(--bg);border-radius:0 0 var(--radius2) var(--radius2);position:sticky;bottom:0;z-index:2}
+label{font-size:11px;color:var(--navy);display:block;margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+input,textarea,select{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:9px;background:var(--card);color:var(--navy);font-family:var(--font);font-size:13px;outline:none;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(2,136,209,.1)}
+textarea{resize:vertical;line-height:1.5}
+.fg{display:flex;flex-direction:column}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.sep{border:none;border-top:1.5px solid var(--border);margin:6px 0}
+.sec-lbl{font-size:10px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:.8px;padding:6px 0 3px;border-bottom:2px solid var(--cyan3);margin-bottom:4px}
+.dyn-row{display:grid;gap:6px;align-items:start;margin-bottom:5px}
+.dyn-row.muc-row{grid-template-columns:1fr auto}
+.dyn-row.prob-row{grid-template-columns:22px 1fr auto}
+.dyn-row.trat-row{grid-template-columns:22px 2fr 1fr 1fr 1fr 80px auto}
+.dyn-row.esp-row{grid-template-columns:90px 1fr 1fr auto}
+.dyn-row.lab-row{grid-template-columns:90px 1fr auto}
+.dyn-row.img-row{grid-template-columns:90px 1fr auto}
+.dyn-row.cond-row{grid-template-columns:22px 1fr auto}
+.dyn-row input,.dyn-row textarea{font-size:12px;padding:6px 8px}
+.dyn-num{font-size:11px;font-weight:700;color:var(--muted2);text-align:center;padding-top:9px}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--muted2);padding:5px;border-radius:7px;display:flex;align-items:center;font-size:15px;transition:all .15s}
+.icon-btn:hover{color:var(--red);background:var(--red-bg)}
+.add-btn{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--cyan);cursor:pointer;padding:3px 0;background:none;border:none;font-weight:600}
+.col-hdr{font-size:9px;color:var(--muted2);font-weight:600;padding:2px 4px;text-transform:uppercase}
+.img-upload-area{border:1.5px dashed var(--muted2);border-radius:8px;padding:12px;text-align:center;cursor:pointer;transition:all .15s;background:var(--cyan3)}
+.img-upload-area:hover{border-color:var(--cyan);background:var(--cyan3)}
+.img-preview-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.img-preview{position:relative;width:64px;height:64px}
+.img-preview img{width:64px;height:64px;object-fit:cover;border-radius:7px;border:1.5px solid var(--border)}
+.img-preview-rm{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border:none;border-radius:50%;width:17px;height:17px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* CALC TAB */
+.calc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;padding:20px 0}
+.calc-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.calc-card-title{font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px;display:flex;align-items:center;gap:7px;padding-bottom:8px;border-bottom:2px solid var(--cyan3)}
+.calc-res{margin-top:10px;padding:10px 12px;background:linear-gradient(135deg,var(--cyan3),#f0f4ff);border-radius:9px;font-size:13px;color:var(--navy);font-weight:500;border-left:3px solid var(--cyan)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;padding:11px 18px;border-radius:12px;font-size:13px;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow2);display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .topbar,.content{margin-left:0}
+  .main-layout{flex-direction:column}
+  .panel{width:100%;max-height:none;position:static}
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+  .dyn-row.trat-row,.dyn-row.esp-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 40 40"><path d="M20 6 C12 6 6 12 6 19 C6 28 14 33 20 36 C26 33 34 28 34 19 C34 12 28 6 20 6Z" stroke-width="2.5"/><path d="M14 19 H18 L20 14 L22 24 L24 19 H26" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="login-hosp">Hospital Regional de Paraíso</div>
+      <div class="login-sub">Dr. Alfredo de Oliveira Barros</div>
+    </div>
+    <div class="login-title">Bem-vindo ao HRPT</div>
+    <div class="login-desc">Sistema de Gerenciamento de Enfermaria<br/>Clínica Médica</div>
+    <div class="login-profiles">
+      <button class="login-profile-btn sel" id="prof-med" onclick="selProfile('med')">
+        <div class="lp-icon"><i class="ti ti-stethoscope" style="font-size:22px;color:#1a237e"></i></div>
+        <div class="lp-name">Médicos</div>
+        <div class="lp-user">medicoscm</div>
+      </button>
+      <button class="login-profile-btn" id="prof-enf" onclick="selProfile('enf')">
+        <div class="lp-icon"><i class="ti ti-nurse" style="font-size:22px;color:#1a237e"></i></div>
+        <div class="lp-name">Enfermagem</div>
+        <div class="lp-user">enfermagemcm</div>
+      </button>
+    </div>
+    <div class="login-fg">
+      <div class="login-lbl">Usuário</div>
+      <input class="login-inp" id="inp-user" placeholder="Digite seu usuário" autocomplete="username"/>
+    </div>
+    <div class="login-fg">
+      <div class="login-lbl">Senha</div>
+      <input class="login-inp" id="inp-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()"><i class="ti ti-login" style="font-size:16px"></i>Entrar no Sistema</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-row">
+        <div class="sidebar-logo-box"><i class="ti ti-heart-rate-monitor" style="font-size:20px;color:#fff"></i></div>
+        <div>
+          <div class="sidebar-logo-txt">HRPT</div>
+          <div class="sidebar-hosp">Clínica Médica</div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sb-avatar">M</div>
+      <div>
+        <div class="user-name" id="sb-name">Médicos</div>
+        <div class="user-role" id="sb-role">Acesso completo</div>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" onclick="switchTab('ward',this)" data-tab="ward"><i class="ti ti-layout-grid"></i>Mapa de Leitos</div>
+      <div class="nav-item" onclick="switchTab('calc',this)" data-tab="calc"><i class="ti ti-calculator"></i>Calculadora Médica</div>
+      <div class="nav-section">Informações</div>
+      <div class="nav-item" onclick="showInfo()"><i class="ti ti-info-circle"></i>Sobre o Sistema</div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout" style="font-size:16px"></i>Sair do Sistema</button>
+    </div>
+  </div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="topbar-title" id="tb-title">Mapa de Leitos</div>
+        <div class="topbar-sub">Enfermaria — 25 leitos · 6 quartos</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="sync-pill" id="sync-pill"><div class="sync-dot" id="sdot"></div><span id="stxt">Local</span></div>
+      <div style="font-size:11px;color:var(--muted)"><i class="ti ti-clock" style="font-size:13px;vertical-align:-2px"></i> <span id="upd"></span></div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- TAB LEITOS -->
+    <div id="tab-ward">
+      <div class="stats-row" id="stats"></div>
+      <div class="main-layout">
+        <div class="ward-wrap">
+          <div class="ward-grid" id="ward"></div>
+        </div>
+        <div class="panel" id="panel">
+          <div class="panel-empty">
+            <i class="ti ti-bed" style="font-size:40px;opacity:.15"></i>
+            <span>Selecione um leito para visualizar a ficha</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- TAB CALC -->
+    <div id="tab-calc" style="display:none"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modal" style="display:none">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mhdr-title"><i class="ti ti-edit" style="font-size:18px"></i><span id="modal-title">Editar leito</span></div>
+      <button class="icon-btn" style="font-size:20px;color:rgba(255,255,255,.7)" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="mbody" id="modal-body"></div>
+    <div class="mfooter">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvar()"><i class="ti ti-device-floppy"></i>Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<div class="img-lightbox" id="lightbox" style="display:none" onclick="document.getElementById('lightbox').style.display='none'">
+  <button class="img-lightbox-close"><i class="ti ti-x"></i></button>
+  <img id="lightbox-img" src="" alt="Exame"/>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-check" style="font-size:15px"></i><span id="toast-msg"></span></div>
+
+<script>
+/* ── CONTAS ── */
+const ACCOUNTS={
+  medicoscm:{senha:'ABCD1234',nome:'Médicos',role:'Acesso completo',avatar:'M'},
+  enfermagemcm:{senha:'1234ABCD',nome:'Enfermagem',role:'Acesso de visualização',avatar:'E'},
+};
+let currentUser=null;
+let selectedProfile='med';
+
+function selProfile(p){
+  selectedProfile=p;
+  document.querySelectorAll('.login-profile-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('prof-'+p).classList.add('sel');
+  document.getElementById('inp-user').value=p==='med'?'medicoscm':'enfermagemcm';
+  document.getElementById('inp-pass').value='';
+  document.getElementById('inp-pass').focus();
+}
+selProfile('med');
+
+function doLogin(){
+  const user=document.getElementById('inp-user').value.trim().toLowerCase();
+  const pass=document.getElementById('inp-pass').value;
+  const acc=ACCOUNTS[user];
+  if(!acc||acc.senha!==pass){
+    document.getElementById('login-err').textContent='Usuário ou senha incorretos.';
+    document.getElementById('inp-pass').value='';
+    return;
+  }
+  currentUser={user,...acc};
+  document.getElementById('login-err').textContent='';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('sb-name').textContent=acc.nome;
+  document.getElementById('sb-role').textContent=acc.role;
+  document.getElementById('sb-avatar').textContent=acc.avatar;
+}
+function doLogout(){
+  if(!confirm('Deseja sair do sistema?'))return;
+  currentUser=null;
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('inp-pass').value='';
+}
+
+/* ── FIREBASE CONFIG ── */
+const FIREBASE_CONFIG={
+  apiKey:"SUA_API_KEY",
+  authDomain:"SEU_PROJETO.firebaseapp.com",
+  databaseURL:"https://SEU_PROJETO-default-rtdb.firebaseio.com",
+};
+const USE_FIREBASE=FIREBASE_CONFIG.databaseURL!=="https://SEU_PROJETO-default-rtdb.firebaseio.com";
+
+/* ── ROOMS ── */
+const ROOMS=[
+  {id:'101',beds:['a','b','c','d','e']},
+  {id:'102',beds:['a','b','c','d','e']},
+  {id:'103',beds:['a','b','c']},
+  {id:'104',beds:['a','b','c','d','e']},
+  {id:'105',beds:['a','b','c']},
+  {id:'106',beds:['a','b','c','d']},
+];
+let PACIENTES={};
+let sel=null,editKey=null;
+const C={muc:0,prob:0,trat:0,esp:0,lab:0,img:0,cond:0};
+
+function ensureAllBeds(){ROOMS.forEach(r=>r.beds.forEach(b=>{const k=r.id+b;if(!PACIENTES[k])PACIENTES[k]={status:'free'};}));}
+function saveLocal(){try{localStorage.setItem('hrpt_v2',JSON.stringify(PACIENTES));}catch(e){}}
+function loadLocal(){try{const r=localStorage.getItem('hrpt_v2');if(r){PACIENTES=JSON.parse(r);return true;}}catch(e){}return false;}
+
+/* ── FIREBASE ── */
+let fbDb=null;
+function initFirebase(){
+  if(!USE_FIREBASE)return;
+  const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/firebase@9.23.0/app-compat.js';
+  s.onload=()=>{const s2=document.createElement('script');s2.src='https://cdn.jsdelivr.net/npm/firebase@9.23.0/database-compat.js';
+    s2.onload=()=>{try{firebase.initializeApp(FIREBASE_CONFIG);fbDb=firebase.database();
+      setSyncStatus('pulse','Conectando...');
+      fbDb.ref('hrpt/v2').on('value',snap=>{const d=snap.val();if(d){PACIENTES=d;ensureAllBeds();saveLocal();renderWard();renderStats();setSyncStatus('ok','Sincronizado');}else setSyncStatus('ok','Online');});
+    }catch(e){setSyncStatus('err','Erro Firebase');}};document.head.appendChild(s2);};document.head.appendChild(s);
+}
+function syncFirebase(){if(fbDb)try{fbDb.ref('hrpt/v2').set(PACIENTES);}catch(e){}}
+function setSyncStatus(st,txt){
+  const dot=document.getElementById('sdot'),pill=document.getElementById('sync-pill'),t=document.getElementById('stxt');
+  dot.className='sync-dot'+(st==='pulse'?' pulse':'');
+  pill.className='sync-pill'+(st==='err'?' err':'');
+  dot.style.background=st==='ok'?'var(--green)':st==='err'?'var(--red)':'var(--amber)';
+  t.textContent=txt;
+}
+
+/* ── TABS ── */
+function switchTab(id,el){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('tab-ward').style.display=id==='ward'?'block':'none';
+  document.getElementById('tab-calc').style.display=id==='calc'?'block':'none';
+  document.getElementById('tb-title').textContent=id==='ward'?'Mapa de Leitos':'Calculadora Médica';
+  if(id==='calc')renderCalc();
+}
+function showInfo(){toast('HRPT v2.0 — Sistema de Gerenciamento de Enfermaria — Clínica Médica');}
+
+/* ── STATS ── */
+function calcStats(){let occ=0,free=0,alert=0,clean=0;ROOMS.forEach(r=>r.beds.forEach(b=>{const p=PACIENTES[r.id+b]||{status:'free'};if(p.status==='occ')occ++;else if(p.status==='alert')alert++;else if(p.status==='clean')clean++;else free++;}));return{occ,free,alert,clean};}
+function renderStats(){
+  const s=calcStats();
+  document.getElementById('stats').innerHTML=`
+    <div class="stat-card occ"><i class="stat-icon ti ti-bed"></i><div class="stat-num" style="color:var(--red)">${s.occ}</div><div class="stat-lbl">Ocupados</div></div>
+    <div class="stat-card alt"><i class="stat-icon ti ti-door-exit"></i><div class="stat-num" style="color:var(--amber)">${s.alert}</div><div class="stat-lbl">Alta prevista</div></div>
+    <div class="stat-card free"><i class="stat-icon ti ti-circle-check"></i><div class="stat-num" style="color:var(--green)">${s.free}</div><div class="stat-lbl">Livres</div></div>
+    <div class="stat-card clean"><i class="stat-icon ti ti-wash"></i><div class="stat-num" style="color:var(--gray)">${s.clean}</div><div class="stat-lbl">Limpeza</div></div>
+    <div class="stat-card total"><i class="stat-icon ti ti-building-hospital"></i><div class="stat-num" style="color:var(--navy)">25</div><div class="stat-lbl">Total leitos</div></div>`;
+}
+
+/* ── WARD ── */
+function renderWard(){
+  const ward=document.getElementById('ward');ward.innerHTML='';
+  ROOMS.forEach(r=>{
+    const row=document.createElement('div');row.className='room-card';
+    row.innerHTML=`<div class="room-header"><div class="room-badge">QUARTO ${r.id}</div><div class="room-lbl">${r.beds.length} leitos</div></div><div class="beds" id="b${r.id}"></div>`;
+    ward.appendChild(row);
+    const bd=document.getElementById('b'+r.id);
+    r.beds.forEach(b=>{
+      const key=r.id+b,p=PACIENTES[key]||{status:'free'};
+      const el=document.createElement('div');
+      el.className='bed '+(p.status||'free')+(sel===key?' sel':'');
+      el.id='bed-'+key;el.onclick=()=>showPanel(key);
+      const dc=p.status==='occ'?'#ef4444':p.status==='alert'?'#f59e0b':p.status==='clean'?'#94a3b8':'#22c55e';
+      el.innerHTML=`${p.isolamento?'<i class="ti ti-biohazard" style="font-size:9px;position:absolute;top:5px;left:5px;color:#ef4444"></i>':''}<div class="bsdot" style="background:${dc}"></div><i class="ti ti-bed" style="font-size:18px;color:var(--navy);opacity:.35"></i><div class="bed-id">${r.id}${b.toUpperCase()}</div><div class="bed-nm">${p.nome?p.nome.split(' ')[0]:'—'}</div>`;
+      bd.appendChild(el);
+    });
+  });
+}
+
+/* ── PAINEL ── */
+function showPanel(key){
+  if(sel){const prev=document.getElementById('bed-'+sel);if(prev)prev.classList.remove('sel');}
+  sel=key;const el=document.getElementById('bed-'+key);if(el)el.classList.add('sel');
+  const p=PACIENTES[key],panel=document.getElementById('panel');
+  if(!p||!p.nome){
+    panel.innerHTML=`<div class="panel-empty"><i class="ti ti-circle-check" style="font-size:40px;opacity:.15"></i><span>Leito disponível</span></div>
+    <div class="pfoot"><button class="btn btn-primary" onclick="abrirModal('${key}')"><i class="ti ti-user-plus"></i>Admitir paciente</button></div>`;return;
+  }
+  const bl=p.status==='alert'?'Alta prevista':'Internado(a)';
+  const bc=p.status==='alert'?'badge-alert':'badge-occ';
+  const medsHtml=(p.tratamentos||[]).map(m=>`<div class="med-item"><div class="med-nm">${m.n}${m.obs?' <span style="font-size:10px;color:var(--amber-t)">('+m.obs+')</span>':''}</div><div class="med-dt">${m.dose} · ${m.freq} · ${m.via}${m.di?' · DI: '+m.di:''}</div></div>`).join('');
+  const probHtml=(p.problemas||[]).map((pr,i)=>`<div class="irow"><span class="ilbl" style="font-weight:700;color:var(--navy)">${i+1}</span><span class="ival" style="text-align:left">${pr.txt}</span></div>`).join('');
+  const labHtml=(p.laboratoriais||[]).map(l=>`<div style="font-size:11px;color:var(--muted);margin-bottom:5px;padding:6px 8px;background:var(--bg);border-radius:7px;border:1px solid var(--border)"><b style="color:var(--navy)">${l.data}</b> — ${l.txt}</div>`).join('');
+  const imgHtml=(p.imagens||[]).map(l=>`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px"><b style="color:var(--navy)">${l.data}</b>${l.txt?' — '+l.txt:''}</div>${(l.fotos||[]).length?`<div class="img-thumb-wrap">${l.fotos.map(f=>`<img class="img-thumb" src="${f}" onclick="openLightbox('${f}')" alt="Exame"/>`).join('')}</div>`:''}</div>`).join('');
+  const condHtml=(p.conduta||[]).map((x,i)=>`<div style="font-size:12px;padding:3px 0;color:var(--navy)">${i+1}) ${x.txt}</div>`).join('');
+  const calcHtml=(p.calc_resultados||[]).length?`<div><div class="sec-title"><i class="ti ti-calculator"></i>Cálculos anexados</div>${p.calc_resultados.map(c=>`<div class="obs" style="margin-bottom:6px"><b>${c.titulo}</b> (${c.data})\n${c.resultado}</div>`).join('')}</div>`:'';
+
+  panel.innerHTML=`
+    <div class="phdr">
+      <div class="phdr-bed"><i class="ti ti-bed" style="font-size:16px"></i>Leito ${key.slice(0,-1)} ${key.slice(-1).toUpperCase()}${p.isolamento?'<span class="iso-badge"><i class="ti ti-biohazard" style="font-size:10px"></i>Isolamento</span>':''}</div>
+      <div class="phdr-badge ${bc}">${bl}</div>
+    </div>
+    <div class="pbody">
+      <div>
+        <div class="sec-title"><i class="ti ti-user-circle"></i>Identificação</div>
+        <div class="irow"><span class="ilbl">Nome</span><span class="ival">${p.nome}</span></div>
+        <div class="irow"><span class="ilbl">Idade / Sexo</span><span class="ival">${p.idade} anos / ${p.sexo==='F'?'Feminino':'Masculino'}</span></div>
+        <div class="irow"><span class="ilbl">Origem</span><span class="ival">${p.origem||'—'}</span></div>
+        <div class="irow"><span class="ilbl">Admissão</span><span class="ival">${p.admissao||'—'}</span></div>
+        ${p.peso?`<div class="irow"><span class="ilbl">Peso</span><span class="ival">${p.peso}</span></div>`:''}
+        <div class="irow"><span class="ilbl">Diagnóstico</span><span class="ival" style="text-align:left">${p.diagnostico||'—'}</span></div>
+        <div class="irow"><span class="ilbl">CID</span><span class="ival">${p.cid||'—'}</span></div>
+        <div class="irow"><span class="ilbl">Comorbidades</span><span class="ival" style="text-align:left">${p.comorbidades||'—'}</span></div>
+        <div class="irow"><span class="ilbl">Alergias</span><span class="ival" style="color:${p.alergias&&p.alergias!=='Nega'?'var(--red)':'var(--green)'}">${p.alergias||'Nega'}</span></div>
+        <div class="irow"><span class="ilbl">MUC</span><span class="ival" style="text-align:left">${(p.muc||[]).map(x=>x.med).join(', ')||'Nega'}</span></div>
+      </div>
+      ${probHtml?`<div><div class="sec-title"><i class="ti ti-list-numbers"></i>Lista de problemas</div>${probHtml}</div>`:''}
+      ${medsHtml?`<div><div class="sec-title"><i class="ti ti-pill"></i>Tratamento em curso</div>${medsHtml}</div>`:''}
+      <div>
+        <div class="sec-title"><i class="ti ti-activity"></i>Sinais vitais</div>
+        <div class="vgrid">
+          <div class="vcard"><div class="vlbl">PA</div><div class="vval">${p.vitals?.pa||'—'}</div><div class="vunit">mmHg</div></div>
+          <div class="vcard"><div class="vlbl">FC</div><div class="vval">${p.vitals?.fc||'—'}</div><div class="vunit">bpm</div></div>
+          <div class="vcard"><div class="vlbl">FR</div><div class="vval">${p.vitals?.fr||'—'}</div><div class="vunit">irpm</div></div>
+          <div class="vcard"><div class="vlbl">Temp.</div><div class="vval">${p.vitals?.temp||'—'}</div><div class="vunit">°C</div></div>
+          <div class="vcard" style="grid-column:1/-1"><div class="vlbl">SpO₂</div><div class="vval">${p.vitals?.spo2||'—'}</div></div>
+        </div>
+      </div>
+      ${p.avaliacao_diaria?`<div><div class="sec-title"><i class="ti ti-clipboard-text"></i>Avaliação diária</div><div class="obs">${p.avaliacao_diaria}</div></div>`:''}
+      ${labHtml?`<div><div class="sec-title"><i class="ti ti-flask"></i>Exames laboratoriais</div>${labHtml}</div>`:''}
+      ${imgHtml?`<div><div class="sec-title"><i class="ti ti-scan"></i>Exames de imagem</div>${imgHtml}</div>`:''}
+      ${condHtml?`<div><div class="sec-title"><i class="ti ti-list-check"></i>Conduta</div>${condHtml}</div>`:''}
+      ${calcHtml}
+    </div>
+    <div class="pfoot">
+      <button class="btn btn-danger" onclick="liberarLeito('${key}')"><i class="ti ti-door-exit"></i>Liberar</button>
+      <button class="btn btn-green" onclick="exportarDoc('${key}')"><i class="ti ti-file-text"></i>Exportar</button>
+      <button class="btn btn-primary" onclick="abrirModal('${key}')"><i class="ti ti-edit"></i>Editar</button>
+    </div>`;
+}
+function openLightbox(src){document.getElementById('lightbox-img').src=src;document.getElementById('lightbox').style.display='flex';}
+
+/* ── EXPORTAR TXT ── */
+function exportarDoc(key){
+  const p=PACIENTES[key];if(!p||!p.nome)return;
+  const lbl=`LEITO ${key.slice(0,-1).toUpperCase()} ${key.slice(-1).toUpperCase()}`;
+  const hoje=new Date().toLocaleDateString('pt-BR');
+  const ef=p.exame_fisico||{};
+  const linhas=[
+    `${lbl} - ${(p.nome||'').toUpperCase()}, ${p.idade} ANOS.`,
+    `ORIGEM: ${(p.origem||'—').toUpperCase()}`,
+    `DATA DE ADMISSÃO: ${p.admissao||'—'}`,
+    p.peso?`PESO: ${p.peso.toUpperCase()}`:'',
+    '',`LISTA DE PROBLEMAS:`,
+    ...(p.problemas||[]).map((x,i)=>`${i+1}) ${x.txt.toUpperCase()}`),
+    '',`COMORBIDADES: ${(p.comorbidades||'NEGA').toUpperCase()}`,
+    '',`MUC: ${(p.muc||[]).map(x=>x.med.toUpperCase()).join(' | ')||'NEGA'}`,
+    '',`ALERGIAS: ${(p.alergias||'NEGA').toUpperCase()}`,
+    '',`TRATAMENTO EM CURSO:`,
+    ...(p.tratamentos||[]).map((x,i)=>`${i+1}) ${x.n.toUpperCase()} ${x.dose} ${x.freq} ${x.via}${x.di?' (DI - '+x.di+')':''}${x.obs?' ('+x.obs.toUpperCase()+')':''}`),
+    '',`ADMISSÃO:`,(p.admissao_hda||'').toUpperCase(),
+    '',`AVALIAÇÃO DIÁRIA (${hoje}):`,(p.avaliacao_diaria||'').toUpperCase(),
+    '',`EXAME FÍSICO:`,
+    ef.ecto?`ECTOSCOPIA: ${ef.ecto.toUpperCase()}`:'',
+    ef.neuro?`NEUROLÓGICO: ${ef.neuro.toUpperCase()}`:'',
+    ef.cardio?`AVALIAÇÃO CARDIOVASCULAR: ${ef.cardio.toUpperCase()}`:'',
+    ef.pulmonar?`AVALIAÇÃO PULMONAR: ${ef.pulmonar.toUpperCase()}`:'',
+    ef.abdome?`ABDOME: ${ef.abdome.toUpperCase()}`:'',
+    ef.renal?`RENAL: ${ef.renal.toUpperCase()}`:'',
+    ef.mmii?`MEMBROS INFERIORES: ${ef.mmii.toUpperCase()}`:'',
+    ...((p.especialidades||[]).length?['',`AVALIAÇÃO DAS ESPECIALIDADES:`,...(p.especialidades||[]).map(x=>`(${x.data}) SUGESTÕES DA ${(x.esp||'').toUpperCase()} - ${(x.med||'').toUpperCase()}\n${x.txt.toUpperCase()}`)]:[]),
+    '',`EXAMES LABORATORIAIS:`,...(p.laboratoriais||[]).map(x=>`(${x.data}): ${x.txt}`),
+    '',`EXAMES DE IMAGEM:`,...(p.imagens||[]).map(x=>`(${x.data}): ${x.txt||'—'}${(x.fotos||[]).length?' ['+x.fotos.length+' imagem(ns)]':''}`),
+    '',`SINAIS VITAIS (${hoje}):`,`PA: ${p.vitals?.pa||'—'} mmHg | FC: ${p.vitals?.fc||'—'} bpm | FR: ${p.vitals?.fr||'—'} irpm | TEMP.: ${p.vitals?.temp||'—'} °C | SPO2: ${p.vitals?.spo2||'—'}`,
+    '',`CONDUTA:`,...(p.conduta||[]).map((x,i)=>`${i+1}) ${x.txt.toUpperCase()}`),
+    ...((p.calc_resultados||[]).length?['',`CÁLCULOS MÉDICOS ANEXADOS:`,...p.calc_resultados.map(c=>`[${c.titulo} - ${c.data}]\n${c.resultado}`)]:[]),
+  ].filter(l=>l!==null&&l!==undefined);
+  const blob=new Blob([linhas.join('\n')],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download=`${lbl.replace(/\s/g,'_')}_${(p.nome||'').split(' ')[0]}_${hoje.replace(/\//g,'-')}.txt`;
+  a.click();URL.revokeObjectURL(url);toast('Documento exportado!');
+}
+
+/* ── LINHAS DINÂMICAS ── */
+function rowId(t,i){return`${t}-${i}`;}
+function addRow(type){const wrap=document.getElementById(`wrap-${type}`);const i=++C[type];const div=document.createElement('div');div.innerHTML=makeRow(type,i,{});wrap.appendChild(div.firstChild);updateNums(type);}
+function removeRow(type,i){const el=document.getElementById(rowId(type,i));if(el)el.remove();updateNums(type);}
+function updateNums(type){const w=document.getElementById(`wrap-${type}`);if(!w)return;[...w.querySelectorAll('.dyn-num')].forEach((el,idx)=>el.textContent=idx+1);}
+function esc(v){return String(v||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function makeRow(type,i,d){
+  const rm=`<button class="icon-btn" onclick="removeRow('${type}',${i})"><i class="ti ti-trash"></i></button>`;
+  if(type==='muc')return`<div class="dyn-row muc-row" id="${rowId(type,i)}"><input placeholder="Medicação (nome + dose + freq.)" value="${esc(d.med)}"/>${rm}</div>`;
+  if(type==='prob')return`<div class="dyn-row prob-row" id="${rowId(type,i)}"><span class="dyn-num">1</span><input placeholder="Problema" value="${esc(d.txt)}"/>${rm}</div>`;
+  if(type==='trat')return`<div class="dyn-row trat-row" id="${rowId(type,i)}"><span class="dyn-num">1</span><input placeholder="Medicação" value="${esc(d.n)}"/><input placeholder="Dose" value="${esc(d.dose)}"/><input placeholder="Freq." value="${esc(d.freq)}"/><input placeholder="Via" value="${esc(d.via)}"/><input placeholder="D. Início" value="${esc(d.di)}"/>${rm}</div>`;
+  if(type==='esp')return`<div class="dyn-row esp-row" id="${rowId(type,i)}"><input placeholder="Data" value="${esc(d.data)}"/><input placeholder="Especialidade" value="${esc(d.esp)}"/><input placeholder="Médico(a)" value="${esc(d.med||'')}"/><textarea placeholder="Parecer" rows="2" style="grid-column:1/-2">${esc(d.txt)}</textarea>${rm}</div>`;
+  if(type==='lab')return`<div class="dyn-row lab-row" id="${rowId(type,i)}"><input placeholder="Data" value="${esc(d.data)}"/><textarea placeholder="Resultados" rows="2">${esc(d.txt)}</textarea>${rm}</div>`;
+  if(type==='img'){
+    const fotosHtml=(d.fotos||[]).map((f,fi)=>`<div class="img-preview" id="fp-${i}-${fi}"><img src="${f}" alt=""/><button class="img-preview-rm" onclick="removeFoto(${i},${fi})">×</button></div>`).join('');
+    return`<div class="dyn-row img-row" id="${rowId(type,i)}" data-fotos='${JSON.stringify(d.fotos||[])}'><input placeholder="Data" value="${esc(d.data)}"/><textarea placeholder="Laudo / Descrição" rows="2">${esc(d.txt)}</textarea>${rm}<div style="grid-column:1/-1"><div class="img-preview-wrap" id="prev-${i}">${fotosHtml}</div><label class="img-upload-area" for="img-up-${i}" style="margin-top:6px;display:block;cursor:pointer"><i class="ti ti-photo-up" style="font-size:20px;color:var(--cyan)"></i><div style="font-size:11px;color:var(--muted);margin-top:3px">Clique para anexar imagens</div><input type="file" id="img-up-${i}" accept="image/*" multiple style="display:none" onchange="handleImgUpload(${i},this)"/></label></div></div>`;
+  }
+  if(type==='cond')return`<div class="dyn-row cond-row" id="${rowId(type,i)}"><span class="dyn-num">1</span><input placeholder="Item da conduta" value="${esc(d.txt)}"/>${rm}</div>`;
+  return'';
+}
+function buildWrap(type,list){C[type]=list.length;return`<div id="wrap-${type}">${list.map((d,i)=>makeRow(type,i+1,d)).join('')}</div><button class="add-btn" onclick="addRow('${type}')"><i class="ti ti-plus" style="font-size:13px"></i>Adicionar</button>`;}
+function collectRows(type,fields){
+  const wrap=document.getElementById(`wrap-${type}`);if(!wrap)return[];
+  return[...wrap.querySelectorAll('.dyn-row')].map(row=>{
+    const ins=[...row.querySelectorAll('input:not([type=file]),textarea')];
+    const obj={};fields.forEach((f,i)=>obj[f]=ins[i]?.value||'');
+    if(type==='img')try{obj.fotos=JSON.parse(row.dataset.fotos||'[]');}catch{obj.fotos=[];}
+    return obj;
+  }).filter(o=>fields.some(f=>f!=='fotos'&&(o[f]||'').trim()));
+}
+function handleImgUpload(i,input){
+  const row=document.getElementById(rowId('img',i));if(!row)return;
+  let fotos=[];try{fotos=JSON.parse(row.dataset.fotos||'[]');}catch{}
+  const prev=document.getElementById('prev-'+i);
+  [...input.files].forEach(file=>{const reader=new FileReader();reader.onload=e=>{const b64=e.target.result;const fi=fotos.length;fotos.push(b64);row.dataset.fotos=JSON.stringify(fotos);const div=document.createElement('div');div.className='img-preview';div.id=`fp-${i}-${fi}`;div.innerHTML=`<img src="${b64}" alt=""/><button class="img-preview-rm" onclick="removeFoto(${i},${fi})">×</button>`;prev.appendChild(div);};reader.readAsDataURL(file);});
+}
+function removeFoto(i,fi){const row=document.getElementById(rowId('img',i));if(!row)return;let f=[];try{f=JSON.parse(row.dataset.fotos||'[]');}catch{}f.splice(fi,1);row.dataset.fotos=JSON.stringify(f);const el=document.getElementById(`fp-${i}-${fi}`);if(el)el.remove();}
+
+/* ── MODAL ── */
+function abrirModal(key){
+  editKey=key;
+  const p=PACIENTES[key]||{status:'free',muc:[],problemas:[],tratamentos:[],especialidades:[],laboratoriais:[],imagens:[],conduta:[],exame_fisico:{},vitals:{}};
+  document.getElementById('modal-title').textContent=`Leito ${key.slice(0,-1).toUpperCase()} ${key.slice(-1).toUpperCase()}`;
+  const ef=p.exame_fisico||{};
+  document.getElementById('modal-body').innerHTML=`
+    <div class="fg2">
+      <div class="fg"><label>Status</label><select id="e-status"><option value="occ" ${(p.status||'free')==='occ'?'selected':''}>Ocupado</option><option value="alert" ${p.status==='alert'?'selected':''}>Alta prevista</option><option value="free" ${p.status==='free'?'selected':''}>Livre</option><option value="clean" ${p.status==='clean'?'selected':''}>Em limpeza</option></select></div>
+      <div class="fg"><label>Isolamento</label><select id="e-iso"><option value="0" ${!p.isolamento?'selected':''}>Não</option><option value="1" ${p.isolamento?'selected':''}>Sim</option></select></div>
+    </div>
+    <hr class="sep"/><div class="sec-lbl">Identificação do paciente</div>
+    <div class="fg"><label>Nome completo</label><input id="e-nome" value="${esc(p.nome)}"/></div>
+    <div class="fg3">
+      <div class="fg"><label>Idade</label><input id="e-idade" value="${esc(p.idade)}"/></div>
+      <div class="fg"><label>Sexo</label><select id="e-sexo"><option value="M" ${p.sexo==='M'?'selected':''}>Masculino</option><option value="F" ${p.sexo==='F'?'selected':''}>Feminino</option></select></div>
+      <div class="fg"><label>Peso</label><input id="e-peso" placeholder="ex: 68kg" value="${esc(p.peso)}"/></div>
+    </div>
+    <div class="fg2">
+      <div class="fg"><label>Origem</label><input id="e-origem" value="${esc(p.origem)}"/></div>
+      <div class="fg"><label>Data de admissão</label><input id="e-adm" placeholder="DD/MM/AAAA" value="${esc(p.admissao)}"/></div>
+    </div>
+    <div class="fg"><label>Diagnóstico principal</label><input id="e-diag" value="${esc(p.diagnostico)}"/></div>
+    <div class="fg2">
+      <div class="fg"><label>CID</label><input id="e-cid" value="${esc(p.cid)}"/></div>
+      <div class="fg"><label>Alergias</label><input id="e-aler" value="${esc(p.alergias||'Nega')}"/></div>
+    </div>
+    <div class="fg"><label>Comorbidades</label><input id="e-comor" value="${esc(p.comorbidades)}"/></div>
+    <hr class="sep"/><div class="sec-lbl">MUC — Medicações em uso contínuo</div>${buildWrap('muc',p.muc||[])}
+    <hr class="sep"/><div class="sec-lbl">Lista de problemas</div>${buildWrap('prob',p.problemas||[])}
+    <hr class="sep"/><div class="sec-lbl">Tratamento em curso</div>
+    <div style="display:grid;grid-template-columns:22px 2fr 1fr 1fr 1fr 80px auto;gap:6px;margin-bottom:4px"><span></span>${['Medicação','Dose','Freq.','Via','D. Início',''].map(h=>`<span class="col-hdr">${h}</span>`).join('')}</div>
+    ${buildWrap('trat',p.tratamentos||[])}
+    <hr class="sep"/><div class="sec-lbl">História da admissão</div><textarea id="e-hda" rows="4">${esc(p.admissao_hda)}</textarea>
+    <hr class="sep"/><div class="sec-lbl">Avaliação diária</div><textarea id="e-avd" rows="4">${esc(p.avaliacao_diaria)}</textarea>
+    <hr class="sep"/><div class="sec-lbl">Exame físico</div>
+    ${[['ef-ecto','Ectoscopia',ef.ecto],['ef-neuro','Neurológico',ef.neuro],['ef-cardio','Cardiovascular',ef.cardio],['ef-pulmonar','Pulmonar',ef.pulmonar],['ef-abdome','Abdome',ef.abdome],['ef-renal','Renal',ef.renal],['ef-mmii','Membros inferiores',ef.mmii]].map(([id,lbl,val])=>`<div class="fg"><label>${lbl}</label><textarea id="${id}" rows="2">${esc(val)}</textarea></div>`).join('')}
+    <hr class="sep"/><div class="sec-lbl">Avaliação das especialidades</div>
+    <div style="display:grid;grid-template-columns:90px 1fr 1fr auto;gap:6px;margin-bottom:4px">${['Data','Especialidade','Médico(a)',''].map(h=>`<span class="col-hdr">${h}</span>`).join('')}</div>${buildWrap('esp',p.especialidades||[])}
+    <hr class="sep"/><div class="sec-lbl">Exames laboratoriais</div>
+    <div style="display:grid;grid-template-columns:90px 1fr auto;gap:6px;margin-bottom:4px">${['Data','Resultados',''].map(h=>`<span class="col-hdr">${h}</span>`).join('')}</div>${buildWrap('lab',p.laboratoriais||[])}
+    <hr class="sep"/><div class="sec-lbl">Exames de imagem — laudos e fotos</div>
+    <div style="display:grid;grid-template-columns:90px 1fr auto;gap:6px;margin-bottom:4px">${['Data','Laudo/Descrição',''].map(h=>`<span class="col-hdr">${h}</span>`).join('')}</div>${buildWrap('img',p.imagens||[])}
+    <hr class="sep"/><div class="sec-lbl">Sinais vitais</div>
+    <div class="fg3">
+      <div class="fg"><label>PA (mmHg)</label><input id="v-pa" value="${esc(p.vitals?.pa)}"/></div>
+      <div class="fg"><label>FC (bpm)</label><input id="v-fc" value="${esc(p.vitals?.fc)}"/></div>
+      <div class="fg"><label>FR (irpm)</label><input id="v-fr" value="${esc(p.vitals?.fr)}"/></div>
+      <div class="fg"><label>Temp. (°C)</label><input id="v-temp" value="${esc(p.vitals?.temp)}"/></div>
+      <div class="fg"><label>SpO₂</label><input id="v-spo2" value="${esc(p.vitals?.spo2)}"/></div>
+    </div>
+    <hr class="sep"/><div class="sec-lbl">Conduta</div>${buildWrap('cond',p.conduta||[])}
+  `;
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+function salvar(){
+  const key=editKey;
+  PACIENTES[key]={...PACIENTES[key],status:g('e-status'),isolamento:g('e-iso')==='1',nome:g('e-nome'),idade:g('e-idade'),sexo:g('e-sexo'),peso:g('e-peso'),origem:g('e-origem'),admissao:g('e-adm'),diagnostico:g('e-diag'),cid:g('e-cid'),alergias:g('e-aler'),comorbidades:g('e-comor'),muc:collectRows('muc',['med']),problemas:collectRows('prob',['txt']),tratamentos:collectRows('trat',['n','dose','freq','via','di']),admissao_hda:g('e-hda'),avaliacao_diaria:g('e-avd'),exame_fisico:{ecto:g('ef-ecto'),neuro:g('ef-neuro'),cardio:g('ef-cardio'),pulmonar:g('ef-pulmonar'),abdome:g('ef-abdome'),renal:g('ef-renal'),mmii:g('ef-mmii')},especialidades:collectRows('esp',['data','esp','med','txt']),laboratoriais:collectRows('lab',['data','txt']),imagens:collectRows('img',['data','txt','fotos']),vitals:{pa:g('v-pa'),fc:g('v-fc'),fr:g('v-fr'),temp:g('v-temp'),spo2:g('v-spo2')},conduta:collectRows('cond',['txt']),calc_resultados:PACIENTES[key]?.calc_resultados||[]};
+  closeModal();saveLocal();syncFirebase();renderWard();renderStats();showPanel(key);toast('Salvo com sucesso!');
+}
+function liberarLeito(key){
+  if(!confirm(`Liberar leito ${key.toUpperCase()}?`))return;
+  PACIENTES[key]={status:'free'};saveLocal();syncFirebase();renderWard();renderStats();sel=null;
+  document.getElementById('panel').innerHTML=`<div class="panel-empty"><i class="ti ti-circle-check" style="font-size:40px;opacity:.15"></i><span>Leito disponível</span></div><div class="pfoot"><button class="btn btn-primary" onclick="abrirModal('${key}')"><i class="ti ti-user-plus"></i>Admitir paciente</button></div>`;
+  toast('Leito liberado.');
+}
+function g(id){const el=document.getElementById(id);return el?el.value:'';}
+function toast(msg){const t=document.getElementById('toast'),m=document.getElementById('toast-msg');m.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+/* ── CALCULADORA ── */
+function renderCalc(){
+  const wrap=document.getElementById('tab-calc');
+  if(wrap.dataset.built==='1')return;
+  wrap.dataset.built='1';
+  const pOpts=Object.entries(PACIENTES).filter(([k,p])=>p.nome).map(([k,p])=>`<option value="${k}">${k.toUpperCase()} — ${p.nome}</option>`).join('');
+  wrap.innerHTML=`<div style="padding:20px 0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px"><i class="ti ti-calculator" style="font-size:18px;color:var(--cyan)"></i>Calculadora Médica</div>
+    </div>
+    <div class="fg" style="max-width:360px;margin-bottom:20px">
+      <label>Paciente para este cálculo</label>
+      <select id="calc-pac" onchange="preencherDadosPac()"><option value="">— Selecionar paciente —</option>${pOpts}</select>
+    </div>
+    <div class="calc-grid">
+      <div class="calc-card"><div class="calc-card-title"><i class="ti ti-droplet" style="color:var(--cyan)"></i>CKD-EPI — TFG Estimada</div>
+        <div class="fg2" style="margin-bottom:8px"><div class="fg"><label>Creatinina (mg/dL)</label><input id="ckd-cr" type="number" step="0.01" placeholder="1.2"/></div><div class="fg"><label>Idade</label><input id="ckd-idade" type="number" placeholder="60"/></div></div>
+        <div class="fg" style="margin-bottom:10px"><label>Sexo</label><select id="ckd-sexo"><option value="M">Masculino</option><option value="F">Feminino</option></select></div>
+        <button class="btn btn-primary" onclick="calcCKD()" style="width:100%"><i class="ti ti-calculator"></i>Calcular</button><div id="ckd-res" class="calc-res" style="display:none"></div></div>
+
+      <div class="calc-card"><div class="calc-card-title"><i class="ti ti-lungs" style="color:var(--cyan)"></i>Wells — TEP</div>
+        ${[['w1','Sinais/sintomas de TVP',3],['w2','Diagnóstico alternativo menos provável',3],['w3','FC > 100 bpm',1.5],['w4','Imobilização / cirurgia últimas 4 semanas',1.5],['w5','TVP ou TEP prévia',1.5],['w6','Hemoptise',1],['w7','Neoplasia ativa',1]].map(([id,lbl,pts])=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:7px;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer"><input type="checkbox" id="${id}" style="width:auto;margin:0;accent-color:var(--cyan)"/> ${lbl} <span style="color:var(--muted);margin-left:auto">${pts}pt</span></label>`).join('')}
+        <button class="btn btn-primary" onclick="calcWells()" style="width:100%"><i class="ti ti-calculator"></i>Calcular</button><div id="wells-res" class="calc-res" style="display:none"></div></div>
+
+      <div class="calc-card"><div class="calc-card-title"><i class="ti ti-virus" style="color:var(--cyan)"></i>SOFA Score</div>
+        ${[['sofa-resp','PaO₂/FiO₂',[[0,'≥400'],[1,'300-399'],[2,'200-299'],[3,'100-199+VM'],[4,'<100+VM']]],['sofa-plaq','Plaquetas (×10³)',[[0,'≥150'],[1,'100-149'],[2,'50-99'],[3,'20-49'],[4,'<20']]],['sofa-bil','Bilirrubina (mg/dL)',[[0,'<1.2'],[1,'1.2-1.9'],[2,'2.0-5.9'],[3,'6.0-11.9'],[4,'≥12']]],['sofa-cv','Cardiovascular',[[0,'PAM≥70'],[1,'PAM<70'],[2,'Dopa≤5'],[3,'Dopa5-15'],[4,'Dopa>15']]],['sofa-neuro','Glasgow',[[0,'15'],[1,'13-14'],[2,'10-12'],[3,'6-9'],[4,'<6']]],['sofa-renal','Creatinina',[[0,'<1.2'],[1,'1.2-1.9'],[2,'2.0-3.4'],[3,'3.5-4.9'],[4,'≥5.0']]]].map(([id,lbl,opts])=>`<div class="fg" style="margin-bottom:7px"><label>${lbl}</label><select id="${id}">${opts.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></div>`).join('')}
+        <button class="btn btn-primary" onclick="calcSOFA()" style="width:100%"><i class="ti ti-calculator"></i>Calcular</button><div id="sofa-res" class="calc-res" style="display:none"></div></div>
+
+      <div class="calc-card"><div class="calc-card-title"><i class="ti ti-baby-carriage" style="color:var(--cyan)"></i>Doses Pediátricas</div>
+        <div class="fg" style="margin-bottom:8px"><label>Peso (kg)</label><input id="ped-peso" type="number" step="0.1" placeholder="15"/></div>
+        <div class="fg" style="margin-bottom:10px"><label>Medicação</label><select id="ped-med"><option value="amox">Amoxicilina (25-50mg/kg/dia)</option><option value="ibup">Ibuprofeno (5-10mg/kg/dose)</option><option value="paracet">Paracetamol (10-15mg/kg/dose)</option><option value="ceftri">Ceftriaxona (50-100mg/kg/dia)</option><option value="diazepam">Diazepam crise (0,3mg/kg EV)</option><option value="adre">Adrenalina anafilaxia (0,01mg/kg)</option><option value="dex">Dexametasona crupe (0,15mg/kg)</option><option value="meto">Metoclopramida (0,15mg/kg EV)</option></select></div>
+        <button class="btn btn-primary" onclick="calcPed()" style="width:100%"><i class="ti ti-calculator"></i>Calcular</button><div id="ped-res" class="calc-res" style="display:none"></div></div>
+
+      <div class="calc-card"><div class="calc-card-title"><i class="ti ti-heart" style="color:var(--cyan)"></i>HAS-BLED</div>
+        ${[['hb1','H — HAS não controlada (PAS>160)'],['hb2','A — Alt. renal ou hepática'],['hb3','S — AVC prévio'],['hb4','B — Sangramento ou predisposição'],['hb5','L — INR lábil (TTR<60%)'],['hb6','E — Idade >65 anos'],['hb7','D — Drogas/álcool']].map(([id,lbl])=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:7px;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer"><input type="checkbox" id="${id}" style="width:auto;margin:0;accent-color:var(--cyan)"/> ${lbl}</label>`).join('')}
+        <button class="btn btn-primary" onclick="calcHASBLED()" style="width:100%"><i class="ti ti-calculator"></i>Calcular</button><div id="hb-res" class="calc-res" style="display:none"></div></div>
+
+      <div class="calc-card"><div class="calc-card-title"><i class="ti ti-scale" style="color:var(--cyan)"></i>IMC + Risco Cardiovascular</div>
+        <div class="fg2" style="margin-bottom:8px"><div class="fg"><label>Peso (kg)</label><input id="imc-peso" type="number" step="0.1" placeholder="80"/></div><div class="fg"><label>Altura (m)</label><input id="imc-alt" type="number" step="0.01" placeholder="1.75"/></div></div>
+        <div class="fg2" style="margin-bottom:10px"><div class="fg"><label>Circ. abdominal (cm)</label><input id="imc-ca" type="number" placeholder="98"/></div><div class="fg"><label>Sexo</label><select id="imc-sexo"><option value="M">Masculino</option><option value="F">Feminino</option></select></div></div>
+        <button class="btn btn-primary" onclick="calcIMC()" style="width:100%"><i class="ti ti-calculator"></i>Calcular</button><div id="imc-res" class="calc-res" style="display:none"></div></div>
+
+      <div class="calc-card"><div class="calc-card-title"><i class="ti ti-brain" style="color:var(--cyan)"></i>NIHSS Simplificado</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${[['nih1','Consciência (0-3)'],['nih2','Desvio do olhar (0-2)'],['nih3','Campos visuais (0-3)'],['nih4','Paralisia facial (0-3)'],['nih5','Braço esq. (0-4)'],['nih6','Braço dir. (0-4)'],['nih7','Perna esq. (0-4)'],['nih8','Perna dir. (0-4)'],['nih9','Ataxia (0-2)'],['nih10','Sensibilidade (0-2)'],['nih11','Linguagem (0-3)'],['nih12','Disartria (0-2)'],['nih13','Negligência (0-2)']].map(([id,lbl])=>`<div class="fg"><label style="font-size:9px">${lbl}</label><input id="${id}" type="number" min="0" max="4" value="0" style="width:60px"/></div>`).join('')}
+        </div>
+        <button class="btn btn-primary" onclick="calcNIHSS()" style="width:100%;margin-top:10px"><i class="ti ti-calculator"></i>Calcular</button><div id="nih-res" class="calc-res" style="display:none"></div></div>
+
+      <div class="calc-card"><div class="calc-card-title"><i class="ti ti-activity" style="color:var(--cyan)"></i>Child-Pugh (Hepatologia)</div>
+        ${[['cp-bil','Bilirrubina total',[[1,'<2 mg/dL'],[2,'2-3 mg/dL'],[3,'>3 mg/dL']]],['cp-alb','Albumina',[[1,'>3.5 g/dL'],[2,'2.8-3.5 g/dL'],[3,'<2.8 g/dL']]],['cp-tp','TP (s aumentado)',[[1,'<4s'],[2,'4-6s'],[3,'>6s']]],['cp-asc','Ascite',[[1,'Ausente'],[2,'Leve'],[3,'Moderada/grave']]],['cp-enc','Encefalopatia',[[1,'Ausente'],[2,'Grau I-II'],[3,'Grau III-IV']]]].map(([id,lbl,opts])=>`<div class="fg" style="margin-bottom:7px"><label>${lbl}</label><select id="${id}">${opts.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></div>`).join('')}
+        <button class="btn btn-primary" onclick="calcChildPugh()" style="width:100%"><i class="ti ti-calculator"></i>Calcular</button><div id="cp-res" class="calc-res" style="display:none"></div></div>
+    </div>
+  </div>`;
+}
+
+function preencherDadosPac(){
+  const key=document.getElementById('calc-pac').value;const p=key?PACIENTES[key]:null;if(!p)return;
+  if(p.idade){['ckd-idade'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=p.idade;});}
+  if(p.peso){const pw=parseFloat(p.peso);if(!isNaN(pw)){['ped-peso','imc-peso'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=pw;});}}
+  if(p.sexo){['ckd-sexo','imc-sexo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=p.sexo;});}
+  toast('Dados do paciente preenchidos!');
+}
+function showRes(id,html){const el=document.getElementById(id);if(el){el.style.display='block';el.innerHTML=html;}}
+function calcCKD(){
+  const cr=parseFloat(document.getElementById('ckd-cr').value),idade=parseInt(document.getElementById('ckd-idade').value),sexo=document.getElementById('ckd-sexo').value;
+  if(!cr||!idade){showRes('ckd-res','Preencha creatinina e idade.');return;}
+  let k=sexo==='F'?0.7:0.9,a=sexo==='F'?-0.241:-0.302,m=sexo==='F'?1.012:1;
+  const r=cr/k,tfg=Math.round(142*Math.pow(Math.min(r,1),a)*Math.pow(Math.max(r,1),-1.2)*Math.pow(0.9938,idade)*m*10)/10;
+  const est=tfg>=90?'G1 — Normal':tfg>=60?'G2 — Levemente reduzida':tfg>=45?'G3a — Moderadamente reduzida':tfg>=30?'G3b — Mod. a gravemente reduzida':tfg>=15?'G4 — Gravemente reduzida':'G5 — Falência renal';
+  showRes('ckd-res',`<b>TFG: ${tfg} mL/min/1,73m²</b><br/>${est}`);
+  anexarCalc('CKD-EPI',`TFG: ${tfg} mL/min/1,73m² — ${est}`);
+}
+function calcWells(){
+  const pts=[['w1',3],['w2',3],['w3',1.5],['w4',1.5],['w5',1.5],['w6',1],['w7',1]].reduce((s,[id,v])=>s+(document.getElementById(id)?.checked?v:0),0);
+  const r=pts<=1?'Baixa probabilidade':pts<=6?'Probabilidade intermediária':'Alta probabilidade';
+  showRes('wells-res',`<b>${pts} pontos</b> — ${r}`);
+  anexarCalc('Wells TEP',`${pts} pontos — ${r}`);
+}
+function calcSOFA(){
+  const total=['sofa-resp','sofa-plaq','sofa-bil','sofa-cv','sofa-neuro','sofa-renal'].reduce((s,id)=>s+parseInt(document.getElementById(id)?.value||0),0);
+  const m=total<=1?'<10%':total<=3?'10-15%':total<=6?'15-20%':total<=9?'20-40%':'≥40%';
+  showRes('sofa-res',`<b>SOFA: ${total}</b> — Mortalidade estimada: ${m}`);
+  anexarCalc('SOFA Score',`${total} pontos — Mortalidade: ${m}`);
+}
+function calcPed(){
+  const peso=parseFloat(document.getElementById('ped-peso').value),med=document.getElementById('ped-med').value;
+  if(!peso){showRes('ped-res','Informe o peso.');return;}
+  const d={amox:{min:25,max:50,u:'mg/dia',f:'÷3x/dia',mx:3000},ibup:{min:5,max:10,u:'mg/dose',f:'6/6h',mx:400},paracet:{min:10,max:15,u:'mg/dose',f:'4-6h',mx:1000},ceftri:{min:50,max:100,u:'mg/dia',f:'÷2x/dia',mx:4000},diazepam:{min:0.3,max:0.3,u:'mg/dose',f:'EV',mx:10},adre:{min:0.01,max:0.01,u:'mg/dose',f:'IM',mx:0.5},dex:{min:0.15,max:0.15,u:'mg/dose',f:'EV',mx:10},meto:{min:0.15,max:0.15,u:'mg/dose',f:'EV',mx:10}}[med];
+  const mn=Math.min(d.min*peso,d.mx).toFixed(1),mx2=Math.min(d.max*peso,d.mx).toFixed(1);
+  const txt=d.min===d.max?`${mn} ${d.u} — ${d.f}`:`${mn}–${mx2} ${d.u} — ${d.f}`;
+  showRes('ped-res',`<b>${txt}</b>`);
+  anexarCalc('Dose Pediátrica',txt);
+}
+function calcHASBLED(){
+  const total=['hb1','hb2','hb3','hb4','hb5','hb6','hb7'].reduce((s,id)=>s+(document.getElementById(id)?.checked?1:0),0);
+  const r=total<=1?'Baixo risco':total===2?'Risco moderado':'Alto risco — revisar anticoagulação';
+  showRes('hb-res',`<b>${total} pontos</b> — ${r}`);
+  anexarCalc('HAS-BLED',`${total} pontos — ${r}`);
+}
+function calcIMC(){
+  const peso=parseFloat(document.getElementById('imc-peso').value),alt=parseFloat(document.getElementById('imc-alt').value),ca=parseFloat(document.getElementById('imc-ca').value),sexo=document.getElementById('imc-sexo').value;
+  if(!peso||!alt){showRes('imc-res','Informe peso e altura.');return;}
+  const imc=peso/(alt*alt),r=(Math.round(imc*10)/10).toFixed(1);
+  const cls=imc<18.5?'Abaixo do peso':imc<25?'Peso normal':imc<30?'Sobrepeso':imc<35?'Obesidade I':imc<40?'Obesidade II':'Obesidade III';
+  let ca_txt='';if(ca){const lim=sexo==='M'?102:88;ca_txt=ca>=lim?' | CA: risco cardiovascular aumentado':' | CA: dentro do limite';}
+  showRes('imc-res',`<b>IMC: ${r} kg/m²</b> — ${cls}${ca_txt}`);
+  anexarCalc('IMC',`IMC: ${r} — ${cls}${ca_txt}`);
+}
+function calcChildPugh(){
+  const total=['cp-bil','cp-alb','cp-tp','cp-asc','cp-enc'].reduce((s,id)=>s+parseInt(document.getElementById(id)?.value||1),0);
+  const cls=total<=6?'A — Bem compensado':total<=9?'B — Comprometimento significativo':'C — Descompensado';
+  showRes('cp-res',`<b>${total} pontos — Classe ${cls.charAt(0)}</b><br/>${cls}`);
+  anexarCalc('Child-Pugh',`${total} pontos — ${cls}`);
+}
+function calcNIHSS(){
+  const total=['nih1','nih2','nih3','nih4','nih5','nih6','nih7','nih8','nih9','nih10','nih11','nih12','nih13'].reduce((s,id)=>s+parseInt(document.getElementById(id)?.value||0),0);
+  const g=total===0?'Sem déficit':total<=4?'AVC mínimo':total<=15?'AVC moderado':total<=20?'AVC moderado-grave':'AVC grave';
+  showRes('nih-res',`<b>NIHSS: ${total}</b> — ${g}`);
+  anexarCalc('NIHSS',`${total} pontos — ${g}`);
+}
+function anexarCalc(titulo,resultado){
+  const key=document.getElementById('calc-pac')?.value;
+  if(!key||!PACIENTES[key]?.nome){toast('Selecione um paciente para anexar o cálculo.');return;}
+  if(!PACIENTES[key].calc_resultados)PACIENTES[key].calc_resultados=[];
+  PACIENTES[key].calc_resultados.push({titulo,resultado,data:new Date().toLocaleString('pt-BR')});
+  saveLocal();syncFirebase();
+  toast(`"${titulo}" anexado ao prontuário de ${PACIENTES[key].nome.split(' ')[0]}!`);
+}
+
+/* ── INIT ── */
+if(!loadLocal()){ROOMS.forEach(r=>r.beds.forEach(b=>{PACIENTES[r.id+b]={status:'free'};}));}
+ensureAllBeds();
+initFirebase();
+document.getElementById('upd').textContent=new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+renderStats();renderWard();
+</script>
+</body>
+</html>
